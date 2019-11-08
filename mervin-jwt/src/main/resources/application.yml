@@ -1,0 +1,33 @@
+server:
+  port: 9406
+  
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:xe
+    username: system
+    password: bhaumik@23
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      pool-name: HikariCP
+      max-lifetime: 1800000
+      connection-timeout: 100000
+      leak-detection-threshold: 10000
+  application:
+    name: spring-security-jpa
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.Oracle10gDialect 
+  main:
+     allow-bean-definition-overriding: true
+  profiles:
+    active:
+    - jwt
+    
+    
+

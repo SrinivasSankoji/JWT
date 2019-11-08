@@ -21,7 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import com.chary.bhaumik.jwt.configuration.CustomException;
+import com.chary.bhaumik.jwt.exception.CustomException;
 import com.chary.bhaumik.jwt.model.Role;
 
 import io.jsonwebtoken.Claims;

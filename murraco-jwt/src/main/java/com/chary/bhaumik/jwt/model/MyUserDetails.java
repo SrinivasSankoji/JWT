@@ -25,7 +25,8 @@ public class MyUserDetails implements UserDetails
     {
         this.userName = user.getUserName();
         this.password = user.getPassword();
-        this.active = user.isActive();
+        //this.active = user.isActive();
+        this.active = false;
         this.authorities = Arrays.stream(user.getRoles().split(","))
                     	   .map(SimpleGrantedAuthority::new)
                     	   .collect(Collectors.toList());

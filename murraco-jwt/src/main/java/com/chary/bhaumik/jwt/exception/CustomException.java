@@ -1,4 +1,4 @@
-package com.chary.bhaumik.jwt.configuration;
+package com.chary.bhaumik.jwt.exception;
 
 import org.springframework.http.HttpStatus;
 

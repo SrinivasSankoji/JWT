@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import com.chary.bhaumik.jwt.configuration.CustomException;
+import com.chary.bhaumik.jwt.exception.CustomException;
 
 @RestControllerAdvice
 public class GlobalExceptionControllerAdvice 

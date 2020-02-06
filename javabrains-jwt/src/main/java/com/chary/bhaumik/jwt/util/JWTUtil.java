@@ -15,7 +15,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Service
 public class JWTUtil 
 {
-	private String SECRET_KEY = "secret";
+	private String SECRET_KEY = "siops";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -50,7 +50,7 @@ public class JWTUtil
         .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails)
+    public boolean validateToken(String token, UserDetails userDetails)
     {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));

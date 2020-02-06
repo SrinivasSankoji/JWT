@@ -35,7 +35,6 @@ public class JWTRequestFilter extends OncePerRequestFilter
 			throws ServletException, IOException 
 	{
 		final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwt = null;
 
@@ -44,11 +43,9 @@ public class JWTRequestFilter extends OncePerRequestFilter
             username = jwtUtil.extractUsername(jwt);
         }
 
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) 
+        {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-
             if (jwtUtil.validateToken(jwt, userDetails)) 
             {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(

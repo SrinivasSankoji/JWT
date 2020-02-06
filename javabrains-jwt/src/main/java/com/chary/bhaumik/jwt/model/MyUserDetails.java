@@ -1,5 +1,6 @@
 package com.chary.bhaumik.jwt.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -10,9 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class MyUserDetails implements UserDetails
+@NoArgsConstructor
+public class MyUserDetails implements UserDetails,Serializable
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -31,12 +34,6 @@ public class MyUserDetails implements UserDetails
                     	   .collect(Collectors.toList());
     }
     
-	/**private String userName;
-    public MyUserDetails(String userName)
-    {
-    	this.userName=userName;
-    }**/
-
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() 
 	{
@@ -51,7 +48,6 @@ public class MyUserDetails implements UserDetails
 	@Override
 	public String getPassword() 
 	{
-		//return "pass";
 		return password;
 	}
 
@@ -82,7 +78,6 @@ public class MyUserDetails implements UserDetails
 	@Override
 	public boolean isEnabled() 
 	{
-		//return true;
 		return true;
 	}
 

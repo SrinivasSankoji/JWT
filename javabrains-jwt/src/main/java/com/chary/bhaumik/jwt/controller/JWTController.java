@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.chary.bhaumik.jwt.model.AuthenticationRequest;
 import com.chary.bhaumik.jwt.model.AuthenticationResponse;
 import com.chary.bhaumik.jwt.model.SIOPSResponse;
+import com.chary.bhaumik.jwt.session.RedisSession;
 import com.chary.bhaumik.jwt.util.JWTUtil;
 
 @RestController
@@ -30,6 +31,9 @@ public class JWTController
 	@Autowired
 	JWTUtil jwtUtil;
 	
+	@Autowired
+	RedisSession redisSession;
+	
 	@GetMapping("/hello")
 	public String hello()
 	{
@@ -41,11 +45,12 @@ public class JWTController
 	{
 		try {
 		UserDetails userDetails=userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-		String jwt=jwtUtil.generateToken(userDetails);
+		String jwtToken=jwtUtil.generateToken(userDetails);
+		redisSession.put(authenticationRequest.getUsername().toUpperCase(), userDetails);
 		SIOPSResponse siopsResponse=new SIOPSResponse();
 		siopsResponse.setMessage("SUCCESS");
 		siopsResponse.setStatus(200);
-		siopsResponse.setResponsePayload(new AuthenticationResponse(jwt));
+		siopsResponse.setResponsePayload(new AuthenticationResponse(jwtToken));
 		return ResponseEntity.ok(siopsResponse);
 		}
 		catch (BadCredentialsException e) 

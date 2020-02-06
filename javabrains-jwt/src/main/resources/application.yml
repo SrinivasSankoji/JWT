@@ -29,6 +29,12 @@ spring:
   profiles:
     active:
     - jwt
+
+security:
+  jwt:
+    token:
+      secretkey: siops
+      expire-length: 60000 # 1 Minute Duration by Default i.e  60 seconds * 1000 miliseconds
     
     
 

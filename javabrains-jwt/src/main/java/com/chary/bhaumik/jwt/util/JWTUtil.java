@@ -5,9 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.chary.bhaumik.jwt.session.RedisSession;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -21,6 +24,9 @@ public class JWTUtil
 	
 	@Value("${security.jwt.token.expire-length}")
 	private long validityInMilliseconds;
+	
+	@Autowired
+	RedisSession redisSession;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -60,9 +66,13 @@ public class JWTUtil
     }
 
     public boolean validateToken(String token, UserDetails userDetails)
-    {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
+	{
+		final String username = extractUsername(token);
+		if((username.equals(userDetails.getUsername()) && !isTokenExpired(token))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 }

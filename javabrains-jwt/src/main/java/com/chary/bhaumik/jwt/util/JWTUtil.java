@@ -28,51 +28,57 @@ public class JWTUtil
 	@Autowired
 	RedisSession redisSession;
 
-    public String extractUsername(String token) {
+    public String extractSubject(String token) 
+    {
         return extractClaim(token, Claims::getSubject);
     }
-
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) 
+    
+    public boolean validateToken(String token, UserDetails userDetails)
+   	{
+   		final String username = extractUsername(token);
+   		return username.equals(userDetails.getUsername()) && !isTokenExpired(token) ? true : false;
+   	}
+    
+    public String extractUsername(String token) 
     {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    	Claims claims = extractAllClaims(token);
+        return (String) claims.get("userName");
     }
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(secretkey).parseClaimsJws(token).getBody();
-    }
-
-    private Boolean isTokenExpired(String token) {
+    
+    public boolean isTokenExpired(String token) 
+    {
         return extractExpiration(token).before(new Date());
     }
-
+    
+    public Date extractExpiration(String token) 
+    {
+        return extractClaim(token, Claims::getExpiration);
+    }
+    
     public String generateToken(UserDetails userDetails) 
 	{
-	Map<String, Object> claims = new HashMap<>();
-	String userName = userDetails.getUsername();
-	return createToken(claims, userName);
+		Map<String, Object> claims = new HashMap<>();
+		return createToken(claims, userDetails);
 	}
-
-    private String createToken(Map<String, Object> claims, String userName) 
-    {
-        return Jwts.builder()
-        .setClaims(claims).setSubject(userName)
-        .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + validityInMilliseconds))
-        .signWith(SignatureAlgorithm.HS256, secretkey).compact();
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails)
+    
+    private String createToken(Map<String, Object> claims, UserDetails userDetails) 
 	{
-		final String username = extractUsername(token);
-		if((username.equals(userDetails.getUsername()) && !isTokenExpired(token))) {
-			return true;
-		} else {
-			return false;
-		}
+		return Jwts.builder().setClaims(claims)
+		.claim("userName", userDetails.getUsername())
+		.claim("role", userDetails.getAuthorities())
+		.setSubject("AcessToken").setIssuedAt(new Date(System.currentTimeMillis()))
+		.setExpiration(new Date(System.currentTimeMillis() + validityInMilliseconds))
+		.signWith(SignatureAlgorithm.HS256, secretkey).compact();
 	}
-
+    
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) 
+	{
+		final Claims claims = extractAllClaims(token);
+		return claimsResolver.apply(claims);
+	}
+    
+    private Claims extractAllClaims(String token) 
+    {
+        return Jwts.parser().setSigningKey(secretkey).parseClaimsJws(token).getBody();
+    }
 }

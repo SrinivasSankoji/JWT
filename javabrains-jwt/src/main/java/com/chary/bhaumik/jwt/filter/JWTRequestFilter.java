@@ -49,7 +49,7 @@ public class JWTRequestFilter extends OncePerRequestFilter
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) 
         {
-        	UserDetails userDetails=redisSession.get(username.toUpperCase());
+        	UserDetails userDetails=redisSession.getUserDetails(username.toUpperCase());
             if (jwtUtil.validateToken(jwtToken, userDetails)) 
             {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(

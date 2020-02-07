@@ -40,11 +40,6 @@ public class MyUserDetails implements UserDetails,Serializable
 		return authorities;
 	}
 	
-    /**public Collection<? extends GrantedAuthority> getAuthorities() 
-	{
-		return Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
-	}**/
-    
 	@Override
 	public String getPassword() 
 	{

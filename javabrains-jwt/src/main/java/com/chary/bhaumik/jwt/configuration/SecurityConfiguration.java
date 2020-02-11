@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.chary.bhaumik.jwt.filter.JWTRequestFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @EnableWebSecurity
 @Configuration

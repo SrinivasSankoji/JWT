@@ -1,6 +1,9 @@
 package com.chary.bhaumik.jwt.filter;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -52,6 +55,10 @@ public class JWTRequestFilter extends OncePerRequestFilter
         	UserDetails userDetails=redisSession.getUserDetails(username.toUpperCase());
             if (jwtUtil.validateToken(jwtToken, userDetails)) 
             {
+            	Map<String,UserDetails> map=new HashMap<>();
+        		map.put(jwtToken, userDetails);
+            	redisSession.put(username.toUpperCase().concat("|")
+        				.concat((new Date(System.currentTimeMillis())).toString()),map);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken

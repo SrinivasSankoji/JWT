@@ -2,6 +2,7 @@ package com.chary.bhaumik.jwt.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +59,8 @@ public class JWTController
 		String jwtToken=jwtUtil.generateToken(userDetails);
 		Map<String,UserDetails> map=new HashMap<>();
 		map.put(jwtToken, userDetails);
-		redisSession.put(authenticationRequest.getUsername().toUpperCase(),map);
+		redisSession.put(authenticationRequest.getUsername().toUpperCase().concat("|")
+				.concat((new Date(System.currentTimeMillis())).toString()),map);
 		SIOPSResponse siopsResponse=new SIOPSResponse();
 		siopsResponse.setMessage("SUCCESS");
 		siopsResponse.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));

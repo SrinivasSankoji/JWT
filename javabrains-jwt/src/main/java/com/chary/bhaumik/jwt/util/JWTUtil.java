@@ -46,9 +46,29 @@ public class JWTUtil
     }
     
     public boolean isTokenExpired(String token) 
-    {
-        return extractExpiration(token).before(new Date());
-    }
+	{
+		if (extractExpiration(token).before(new Date())) {
+			return true;
+		} else {
+			return refreshToken(token);
+		}
+	}
+    
+    public boolean refreshToken(String token)
+	{
+		String userName = extractUsername(token);
+		long lastRequest = redisSession.getLastReuestofUser(userName);
+		long diff = (new Date(lastRequest).getTime() - extractExpiration(token).getTime()) / (60 * 1000) % 60;
+		if (diff < 5) {
+			Map<String, UserDetails> map = new HashMap<>();
+			map.put(generateToken(redisSession.getUserDetails(userName)),
+					redisSession.getUserDetails(extractUsername(token)));
+			redisSession.put(
+					userName.toUpperCase().concat("|").concat((new Date(System.currentTimeMillis())).toString()), map);
+			return true;
+		}
+		return false;
+	}
     
     public Date extractExpiration(String token) 
     {

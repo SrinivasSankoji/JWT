@@ -3,16 +3,20 @@ package com.chary.bhaumik.jwt.session;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+/** 
+ * @author Srinivas Sankoji
+ */
 @Component
 public class RedisSession implements Map<String, Map<String,UserDetails>> 
 {
 	private Map<String, Map<String,UserDetails>> session = new HashMap<>();
-
+	
 	private  RedisSession instance = null;
 	
 	private RedisSession() {
@@ -98,22 +102,34 @@ public class RedisSession implements Map<String, Map<String,UserDetails>>
 	
 	public UserDetails getUserDetails(String key)
 	{
-		return session.entrySet().stream()
-				.filter(entry -> entry.getKey().equalsIgnoreCase(key))
-				.map(Map.Entry::getValue)
-				.flatMap(mapper -> mapper.entrySet().stream())
-				.map(Map.Entry::getValue)
-				.findFirst().orElse(null);
+		return session.entrySet().stream().filter(entry -> entry.getKey().contains(key))
+		.map(Map.Entry::getValue).flatMap(mapper -> mapper.entrySet().stream()).map(Map.Entry::getValue)
+		.findFirst().orElse(null);
 	}
 	
 	public String getAccessToken(String key)
 	{
-		return session.entrySet().stream()
-		.filter(entry -> entry.getKey().equalsIgnoreCase(key))
-		.map(Map.Entry::getValue)
-		.flatMap(mapper ->mapper.entrySet().stream())
-		.map(Map.Entry::getKey)
+		return session.entrySet().stream().filter(entry -> entry.getKey().contains(key))
+		.map(Map.Entry::getValue).flatMap(mapper -> mapper.entrySet().stream()).map(Map.Entry::getKey)
 		.findFirst().orElse("Invalid Token");
+	}
+	
+	public String getUserName(String key)
+	{
+		return session.entrySet().stream()
+		.filter(map -> map.getKey().contains(key))
+		.map(Map.Entry::getKey)
+		.findFirst().orElse(null);
+	}
+	
+	public long getLastReuestofUser(String key)
+	{
+		 OptionalLong result=session.entrySet().stream()
+		.filter(map -> map.getKey().contains(key))
+		.map(Map.Entry::getKey)
+		.mapToLong(mapper -> Long.parseLong(mapper.split("|")[1]))
+		.findFirst();
+		 return result.getAsLong();
 	}
 	
 }

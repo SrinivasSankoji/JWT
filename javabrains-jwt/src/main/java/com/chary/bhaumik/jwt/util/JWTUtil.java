@@ -47,8 +47,10 @@ public class JWTUtil
     
     public boolean isTokenExpired(String token) 
 	{
-		if (extractExpiration(token).before(new Date())) {
-			return true;
+		boolean isExpired = false;
+		isExpired = extractExpiration(token).before(new Date());
+		if (!isExpired) {
+			return isExpired;
 		} else {
 			return refreshToken(token);
 		}

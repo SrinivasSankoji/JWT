@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,8 +21,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.chary.bhaumik.jwt.model.JWTModel;
 import com.chary.bhaumik.jwt.session.RedisSession;
 import com.chary.bhaumik.jwt.util.JWTUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter
@@ -42,23 +47,35 @@ public class JWTRequestFilter extends OncePerRequestFilter
 			throws ServletException, IOException 
 	{
 		final String authorizationHeader = request.getHeader("Authorization");
-        String username = null;
+        String userName = null;
         String jwtToken = null;
+        long expirationTime=0;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwtToken = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwtToken);
-        }
+		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) 
+		{
+			try {
+				jwtToken = authorizationHeader.substring(7);
+				userName = jwtUtil.extractUsername(jwtToken);
+			} catch (ExpiredJwtException exception) {
+				JWTModel jwtModel = decodeJWT(jwtToken);
+				userName = jwtModel.getUserName().toUpperCase();
+				expirationTime = jwtModel.getExp();
+				refreshToken(userName, expirationTime);
+				jwtToken=redisSession.getJWTToken(userName);
+			}
+		}
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) 
+        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) 
         {
-        	UserDetails userDetails=redisSession.getUserDetails(username.toUpperCase());
+        	UserDetails userDetails=redisSession.getUserDetails(userName.toUpperCase());
             if (jwtUtil.validateToken(jwtToken, userDetails)) 
             {
-            	Map<String,UserDetails> map=new HashMap<>();
-        		map.put(jwtToken, userDetails);
-            	redisSession.put(username.toUpperCase().concat("|")
-        				.concat((new Date(System.currentTimeMillis())).toString()),map);
+            	Map<String, UserDetails> tokenMap=new HashMap<>();
+        		tokenMap.put(jwtToken, userDetails);
+        		Map<Long,Map<String, UserDetails>> refreshMap=new HashMap<>();
+        		refreshMap.put(System.currentTimeMillis(), tokenMap);
+        		redisSession.put(userDetails.getUsername().toUpperCase(), refreshMap);
+            	
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
@@ -68,4 +85,29 @@ public class JWTRequestFilter extends OncePerRequestFilter
         }
         filterChain.doFilter(request, response);
     }
+	
+	
+	private JWTModel decodeJWT(String jwtToken) throws IOException
+	{
+		String[] splitstring = jwtToken.split("\\.");
+        String base64EncodedBody = splitstring[1];
+        Base64 base64Url = new Base64(true);
+        String body = new String(base64Url.decode(base64EncodedBody));
+        ObjectMapper objectMapper=new ObjectMapper();
+        return objectMapper.readValue(body, JWTModel.class);
+	}
+	
+	private String refreshToken(String userName,long expirationTime)
+	{
+		long lastRequest = redisSession.getLastRequestofUser(userName);
+		long diff = (new Date(lastRequest).getTime() - new Date(expirationTime).getTime()) / (60 * 1000) % 60;
+		if (diff < 1) {
+			Map<String, UserDetails> tokenMap=new HashMap<>();
+			tokenMap.put(jwtUtil.generateToken(redisSession.getUserDetails(userName)),redisSession.getUserDetails(userName));
+			Map<Long,Map<String, UserDetails>> refreshMap=new HashMap<>();
+			refreshMap.put(System.currentTimeMillis(), tokenMap);
+			redisSession.put(userName.toUpperCase(), refreshMap);
+		}
+		return redisSession.getJWTToken(userName);
+	}
 }

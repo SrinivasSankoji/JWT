@@ -48,7 +48,7 @@ public class JWTRequestFilter extends OncePerRequestFilter
 	{
 		final String authorizationHeader = request.getHeader("Authorization");
         String userName = null;
-        String jwtToken = null;
+        String jwtToken = "";
         long expirationTime=0;
 
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) 
@@ -75,7 +75,6 @@ public class JWTRequestFilter extends OncePerRequestFilter
         		Map<Long,Map<String, UserDetails>> refreshMap=new HashMap<>();
         		refreshMap.put(System.currentTimeMillis(), tokenMap);
         		redisSession.put(userDetails.getUsername().toUpperCase(), refreshMap);
-            	
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
@@ -100,7 +99,7 @@ public class JWTRequestFilter extends OncePerRequestFilter
 	private String refreshToken(String userName,long expirationTime)
 	{
 		long lastRequest = redisSession.getLastRequestofUser(userName);
-		long diff = (new Date(lastRequest).getTime() - new Date(expirationTime).getTime()) / (60 * 1000) % 60;
+		long diff = (new Date(expirationTime).getTime() - new Date(lastRequest).getTime()) / (60 * 1000) % 60;
 		if (diff < 1) {
 			Map<String, UserDetails> tokenMap=new HashMap<>();
 			tokenMap.put(jwtUtil.generateToken(redisSession.getUserDetails(userName)),redisSession.getUserDetails(userName));

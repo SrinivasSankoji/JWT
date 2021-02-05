@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:oracle:thin:@localhost:1521:xe
     username: system
-    password: bhaumik@23
+    password: system
     driver-class-name: oracle.jdbc.OracleDriver
     hikari:
       minimum-idle: 5
@@ -34,7 +34,7 @@ security:
   jwt:
     token:
       secretkey: siops
-      expire-length: 60000 # 1 Minute Duration by Default i.e  60 seconds * 1000 miliseconds
+      expire-length: 300000 # 1 Minute Duration by Default i.e  60 seconds * 1000 miliseconds
     
     
 
